@@ -1,5 +1,7 @@
 import matplotlib.pyplot as plt
 import pathlib
+
+import numpy
 from utils import read_im, save_im
 output_dir = pathlib.Path("image_solutions")
 output_dir.mkdir(exist_ok=True)
@@ -18,6 +20,8 @@ def greyscale(im):
     Returns:
         im ([type]): [np.array of shape [H, W]]
     """
+    
+    im = numpy.dot(im[...,:3], [0.212,0.7152, 0.0722])
 
     return im
 
@@ -37,4 +41,11 @@ def inverse(im):
         im ([type]): [np.array of shape [H, W]]
     """
     # YOUR CODE HERE
+    im = 1 - im
+
+
     return im
+
+im_inverse = inverse(im_greyscale)
+save_im(output_dir.joinpath("lake_inverse.jpg"), im_inverse, cmap="gray")
+plt.imshow(im_inverse, cmap="gray")

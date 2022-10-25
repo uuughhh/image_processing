@@ -23,7 +23,25 @@ def convolve_im(im, kernel,
     """
     assert len(im.shape) == 3
 
-    return im
+    result = np.zeros(im.shape) # initialize the final result with the same size as the image
+    height = im.shape[0]
+    width = im.shape[1]
+    kernel_size = kernel.shape[0]
+
+    # calculating the times of iteration needed in two directions
+    height_iteration = height - kernel_size + 1
+    width_iteration = width - kernel_size + 1
+
+    for z in range (3):
+        # iterate through each color channel of the image
+        for y in range (height_iteration):
+            for x in range (width_iteration):
+                # multipying filter by filter
+                one_iter : np.ndarray = im[y:(y+kernel_size),x:(x+kernel_size),z] * kernel
+                # put the sum of the result in place
+                result[y,x,z] = one_iter.sum()
+
+    return result
 
 
 if __name__ == "__main__":
