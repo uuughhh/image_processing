@@ -27,7 +27,31 @@ def create_binary_image(im):
     """
 
     # START YOUR CODE HERE ### (You can change anything inside this block)
+    def amplitude(fft):
+        real = fft.real
+        imag = fft.imag
+        return np.sqrt(real**2 + imag**2)
+
     binary_im = np.zeros_like(im, dtype=np.bool)
+    fft = np.fft.fft2(im)
+    h = fft.shape[0]
+    w = fft.shape[1]
+    fft_v = np.fft.fftshift(fft)
+    fft_v = amplitude(fft)
+    plt.plot(fft_v[0])
+    plt.ylim(0,100)
+    # plt.imshow(fft_v)
+    plt.show()
+    for i in range(h):
+        for j in range(w):
+            if amplitude(fft[i,j])>20:
+                binary_im[i,j] = 1
+            else:
+                binary_im[i,j] = 0
+            
+
+
+
     ### END YOUR CODE HERE ###
     return binary_im
 

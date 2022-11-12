@@ -31,8 +31,15 @@ def create_model():
         Initializes the mode. Edit the code below if you would like to change the model.
     """
     model = nn.Sequential(
+        nn.Conv2d(1, 32, kernel_size = 5, stride = 1, padding = 2),
+        nn.MaxPool2d(kernel_size = 2, stride = 2),
+        nn.Conv2d(32, 64, kernel_size = 3, stride = 1, padding = 1),
+        nn.MaxPool2d(kernel_size = 2, stride = 2),
+        nn.Conv2d(64, 128, kernel_size = 3, stride = 1, padding = 1),
+        nn.MaxPool2d(kernel_size = 2, stride = 2),
         nn.Flatten(),  # Flattens the image from shape (batch_size, C, Height, width) to (batch_size, C*height*width)
-        nn.Linear(32*32*1, 10)
+        nn.ReLU(),
+        nn.Linear(32*32*2, 10)
         # No need to include softmax, as this is already combined in the loss function
     )
     # Transfer model to GPU memory if a GPU is available
@@ -75,11 +82,12 @@ trainer = Trainer(
 train_loss_dict, test_loss_dict = trainer.train(num_epochs)
 
 
+
 # We can now plot the training loss with our utility script
 
 # Plot loss
-utils.plot_loss(train_loss_dict, label="Train Loss")
-utils.plot_loss(test_loss_dict, label="Test Loss")
+utils.plot_loss(train_loss_dict, label="SGD Train Loss")
+utils.plot_loss(test_loss_dict, label="SGD Test Loss")
 # Limit the y-axis of the plot (The range should not be increased!)
 plt.ylim([0, .5])
 plt.legend()
@@ -91,3 +99,49 @@ plt.show()
 final_loss, final_acc = utils.compute_loss_and_accuracy(
     dataloader_test, model, loss_function)
 print(f"Final Test loss: {final_loss}. Final Test accuracy: {final_acc}")
+
+# Task2 (b)
+
+torch.random.manual_seed(0)
+np.random.seed(0)
+
+
+dataloader_train_adam, dataloader_test_adam = dataloaders.load_dataset(
+    batch_size, image_transform)
+example_images_adam, _adam = next(iter(dataloader_train_adam))
+
+model_adam = create_model()
+
+# Hyperparameters
+learning_rate_adam = .001
+
+# Define optimizer (Stochastic Gradient Descent)
+optimizer_adam = torch.optim.Adam(model_adam.parameters(),
+                            lr=learning_rate_adam)
+
+trainer_adam = Trainer(
+    model=model,
+    dataloader_train=dataloader_train_adam,
+    dataloader_test=dataloader_test_adam,
+    batch_size=batch_size,
+    loss_function=loss_function,
+    optimizer=optimizer_adam
+)
+train_loss_dict_adam, test_loss_dict_adam = trainer_adam.train(num_epochs)
+
+# Plot loss
+utils.plot_loss(train_loss_dict, label="SGD Train Loss")
+utils.plot_loss(test_loss_dict, label="SGD Test Loss")
+utils.plot_loss(train_loss_dict_adam, label="Adam Train Loss")
+utils.plot_loss(test_loss_dict_adam, label="Adam Test Loss")
+# Limit the y-axis of the plot (The range should not be increased!)
+plt.ylim([0, .1])
+plt.legend()
+plt.xlabel("Global Training Step")
+plt.ylabel("Cross Entropy Loss")
+plt.savefig(utils.image_output_dir.joinpath("task2b_plot.png"))
+plt.show()
+
+final_loss_adam, final_acc_adam = utils.compute_loss_and_accuracy(
+    dataloader_test_adam, model_adam, loss_function)
+print(f"Final Test loss: {final_loss_adam}. Final Test accuracy: {final_acc_adam}")

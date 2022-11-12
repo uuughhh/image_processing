@@ -24,7 +24,34 @@ def convolve_im(im: np.array,
     """
     # START YOUR CODE HERE ### (You can change anything inside this block)
 
-    conv_result = im
+    # get |F{f}|
+    def amplitude(fft):
+        real = fft.real
+        imag = fft.imag
+        return np.sqrt(real**2 + imag**2)
+
+    # get frequency doamin of the iamge
+    fft = np.fft.fft2(im)
+    fft_v = np.fft.fftshift(fft)
+    fft_v = np.log(amplitude(fft_v)+1)  # visualize frequency domain
+
+    height = fft.shape[0]
+    width = fft.shape[1]
+    kernel_size = kernel.shape[0]
+
+    # pad kernel to the same size as the image
+    pad_kernel = np.pad(kernel,[(height//2, height//2-kernel_size), (width//2, width//2-kernel_size)])
+    # transform to frequency domain
+    fft_kernel = np.fft.fft2(pad_kernel)
+    fft_kernel_v = np.fft.fftshift(fft_kernel)
+    fft_kernel_v = np.log(amplitude(fft_kernel_v)+1)    # visualize kernel in frequency domain
+
+    # apply filter to the image
+    fft_filtered = fft * fft_kernel
+    fft_filtered_v = np.fft.fftshift(fft_filtered)
+    fft_filtered_v = np.log(amplitude(fft_filtered_v)+1)    #visualize filtered image in frequency domain
+
+    conv_result = np.fft.ifftshift(np.fft.ifft2(fft_filtered)).real #visualize result
 
     if verbose:
         # Use plt.subplot to place two or more images beside eachother
@@ -34,10 +61,13 @@ def convolve_im(im: np.array,
         plt.imshow(im, cmap="gray")
         plt.subplot(1, 5, 2)
         # Visualize FFT
+        plt.imshow(fft_v)
         plt.subplot(1, 5, 3)
         # Visualize FFT kernel
+        plt.imshow(fft_kernel_v)
         plt.subplot(1, 5, 4)
         # Visualize filtered FFT image
+        plt.imshow(fft_filtered_v)
         plt.subplot(1, 5, 5)
         # Visualize filtered spatial image
         plt.imshow(conv_result, cmap="gray")
