@@ -14,6 +14,31 @@ def remove_noise(im: np.ndarray) -> np.ndarray:
     """
     # START YOUR CODE HERE ### (You can change anything inside this block)
     # You can also define other helper functions
+    
+    # clear extra noises
+    clear_element = [
+        [1,1,1,1,1],
+        [1,1,1,1,1],
+        [1,1,1,1,1],
+        [1,1,1,1,1],
+        [1,1,1,1,1]]
+    im = skimage.morphology.binary_erosion(im,footprint=clear_element)
+    im = skimage.morphology.binary_erosion(im,footprint=clear_element)
+    im = skimage.morphology.binary_opening(im,footprint=clear_element)
+
+    # fill in empty spots
+    fill_element = [
+        [0,0,1,1,1,0,0],
+        [0,1,1,1,1,1,0],
+        [1,1,1,1,1,1,1],
+        [0,1,1,1,1,1,0],
+        [0,0,1,1,1,0,0],]
+
+    im = skimage.morphology.binary_dilation(im,footprint=fill_element)
+    im = skimage.morphology.binary_dilation(im,footprint=fill_element)
+    im = skimage.morphology.binary_dilation(im,footprint=fill_element)
+    im = skimage.morphology.binary_closing(im,footprint=fill_element)
+    
     return im
     ### END YOUR CODE HERE ###
 

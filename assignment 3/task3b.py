@@ -23,6 +23,20 @@ def distance_transform(im: np.ndarray) -> np.ndarray:
         [1, 1, 1]
     ], dtype=bool)
     result = im.astype(np.int32)
+
+    def incrementDistance():
+        """
+        Increment 1 to the value of the result image in the positions of the exsiting foreground
+        """
+        for row in range(im.shape[0]):
+            for col in range (im.shape[1]):
+                if im[row,col] == 1:
+                    result[row,col]+=1 
+
+    while 1 in im:
+        im = skimage.morphology.binary_erosion(im,structuring_element)
+        incrementDistance()
+        
     return result
     ### END YOUR CODE HERE ###
 

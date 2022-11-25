@@ -19,10 +19,62 @@ def region_growing(im: np.ndarray, seed_points: list, T: int) -> np.ndarray:
     """
     # START YOUR CODE HERE ### (You can change anything inside this block)
     # You can also define other helper functions
+
+    def neighboringPoints (row:int,col:int)-> list:
+        """
+        Returning 8 neighboring points of the seed points.
+        """
+        neighbors = [
+            [row-1,col-1],
+            [row-1,col],
+            [row-1,col+1],
+            [row,col-1],
+            [row,col+1],
+            [row+1,col-1],
+            [row+1,col],
+            [row+1,col+1]
+            ]
+        return neighbors
+
+    def inspect (row,col,rowN,colN) -> bool:
+        """
+        decide whethter a point can be marked as true
+        mark true to segmented image if valid
+        """
+        if abs(im[row,col] - im[rowN,colN]) <= intensity_threshold and segmented[rowN,colN]!=True:
+            # set true if the absolute difference is smaller than threshold and never visited
+            segmented[rowN,colN] = True
+            return True
+        # not a valid point
+        return False
+
+    def recursiveGrowing (candidates:list,row:int,col:int) :
+        """
+        A recursive function to grow until the candidates list is empty
+        """
+        if len(candidates) == 0:
+            # no more points to inspect
+            return
+        else:
+            for rowN,colN in candidates:
+                # pixel within range
+                if 0 <= rowN < im.shape[0] and 0 <= rowN < im.shape[1]:
+                    # a new point satisfying the predicate found
+                    if inspect(row,col,rowN,colN) == True:
+                        new_candidates = neighboringPoints(rowN,colN)
+                        recursiveGrowing(new_candidates,row,col)
+            return
+
+
     segmented = np.zeros_like(im).astype(bool)
     im = im.astype(float)
     for row, col in seed_points:
         segmented[row, col] = True
+        # iterate through neighbors
+        candidates = neighboringPoints(row,col)
+        # start recursive growing
+        recursiveGrowing(candidates,row,col)
+
     return segmented
     ### END YOUR CODE HERE ###
 

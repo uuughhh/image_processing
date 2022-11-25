@@ -4,6 +4,9 @@ import utils
 import pathlib
 
 
+from matplotlib import pyplot as plt
+
+
 def otsu_thresholding(im: np.ndarray) -> int:
     """
         Otsu's thresholding algorithm that segments an image into 1 or 0 (True or False)
@@ -17,8 +20,32 @@ def otsu_thresholding(im: np.ndarray) -> int:
     assert im.dtype == np.uint8
     # START YOUR CODE HERE ### (You can change anything inside this block)
     # You can also define other helper functions
-    # Compute normalized histogram
-    threshold = 128
+
+    # historgram
+    hist,binRanges = np.histogram(im,bins=256)
+    
+    # normalization
+    hist = np.divide(hist, hist.max())
+    
+    # Calculate possibilities for all combinations of class division
+    # possClass1[n] corresponds to possClass2[n+1] for the same division
+    # possClass1[-1]
+    possClass1 = np.cumsum(hist)
+    possClass2 = np.flip(np.cumsum(np.flip(hist)))
+    
+    # Get the mean of each bin to represent the bin
+    binMeans = np.divide((np.add(binRanges[:-1], binRanges[1:])), 2.)
+    # in-class means 
+    mean1 = np.cumsum(hist * binMeans) / possClass1
+    mean2 = np.flip((np.cumsum(np.flip((hist * binMeans))) / np.flip(possClass2)))
+    # Calculate all the between-class variances
+    betweenClassVars = possClass1[:-1] * possClass2[1:] * (mean1[:-1] - mean2[1:]) ** 2
+    
+    # Find the index with the maximum between-class variances
+    maxVarIndex = np.argmax(betweenClassVars)
+    
+    threshold = binMeans[:-1][maxVarIndex]
+
     return threshold
     ### END YOUR CODE HERE ###
 
